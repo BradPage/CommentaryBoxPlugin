@@ -156,7 +156,6 @@ class CommentsElement extends LitElement {
     const outputobj = {
       comments: this.workingComments,
       mostRecentComment: null,
-      hasNewComment: false
     };
     this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
   }
@@ -240,7 +239,6 @@ class CommentsElement extends LitElement {
     const outputobj = {
       comments: this.workingComments,
       mostRecentComment,
-      hasNewComment: this.deletableIndices.length > 0
     };
 
     this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
