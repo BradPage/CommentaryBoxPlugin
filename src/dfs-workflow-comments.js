@@ -70,7 +70,7 @@ class CommentsElement extends LitElement {
           isValueField: true,
           properties: {
             comments: {
-              type: 'array', //change to object to deploy, change to array to use in the control
+              type: 'array',
               description: 'Array of comments',
               items: {
                 type: 'object',
@@ -99,6 +99,11 @@ class CommentsElement extends LitElement {
                 comment: { type: 'string', description: 'Comment', title: 'Comment' },
                 timestamp: { type: 'string', format: 'date-time', description: 'Log time', title: 'Log time' },
               },
+            },
+            hasNewComment: {
+              type: 'boolean',
+              description: 'Indicates if a comment has been added in the current step',
+              title: 'Has New Comment'
             },
           },
         },
@@ -146,10 +151,19 @@ class CommentsElement extends LitElement {
     this.historyLimit = 5;
     this.showAll = false;
   }
+
   connectedCallback() {
-  super.connectedCallback();
-  // Set initial validation state when component connects
-  this.updateValidationState();
+    super.connectedCallback();
+    // Set initial validation state when component connects
+    this.updateValidationState();
+    
+    // Dispatch initial output state
+    const outputobj = {
+      comments: this.workingComments,
+      mostRecentComment: null,
+      hasNewComment: false
+    };
+    this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
   }
 
   toggleShowAll() {
@@ -169,12 +183,12 @@ class CommentsElement extends LitElement {
       this.workingComments = [...this.inputobj.comments];
       this.deletableIndices = []; // Reset deletable indices when inputobj changes
     }
-
+  
     // Check for changes to commentsBorder or commentsStriped and trigger re-render
     if (changedProperties.has('commentsBorder') || changedProperties.has('commentsStriped')) {
       this.requestUpdate();
     }
-    
+  
     if (changedProperties.has('readOnly')) {
       this.requestUpdate();
     }
@@ -231,6 +245,7 @@ class CommentsElement extends LitElement {
     const outputobj = {
       comments: this.workingComments,
       mostRecentComment,
+      hasNewComment: this.deletableIndices.length > 0
     };
 
     this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
@@ -253,6 +268,7 @@ class CommentsElement extends LitElement {
     const outputobj = {
       comments: this.workingComments,
       mostRecentComment,
+      hasNewComment: this.deletableIndices.length > 0
     };
   
     this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
