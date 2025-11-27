@@ -146,6 +146,12 @@ class CommentsElement extends LitElement {
     this.historyLimit = 5;
     this.showAll = false;
   }
+  
+  connectedCallback() {
+  super.connectedCallback();
+  // Set initial validation state when component connects
+  this.updateValidationState();
+  }
 
   toggleShowAll() {
     this.showAll = !this.showAll;
