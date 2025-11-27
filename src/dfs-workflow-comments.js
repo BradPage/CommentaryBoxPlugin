@@ -11,7 +11,7 @@ class CommentsElement extends LitElement {
   static getMetaConfig() {
     return {
       controlName: 'dfs-workflow-comments-required',
-      fallbackDisableSubmit: false,
+      fallbackDisableSubmit: true,
       description: 'Notes and comments',
       iconUrl:'https://bradpage.github.io/WebComponents/public/media/icons/icon.svg',
       groupName: 'DFS',
@@ -103,7 +103,7 @@ class CommentsElement extends LitElement {
           },
         },
       },
-      events: ['ntx-value-change'],
+      events: ['ntx-value-change', 'ntx-control-validation-change'],
       standardProperties: { fieldLabel: true, description: true, readOnly: true, visibility: true },
     };
   }
@@ -173,6 +173,26 @@ class CommentsElement extends LitElement {
     if (changedProperties.has('readOnly')) {
       this.requestUpdate();
     }
+
+    // Update validation state when requireComment changes or workingComments changes
+    if (changedProperties.has('requireComment') || changedProperties.has('workingComments')) {
+      this.updateValidationState();
+    }
+  }
+
+  updateValidationState() {
+    // Determine if the control is valid
+    const isValid = !this.requireComment || this.workingComments.length > 0;
+    
+    // Dispatch ntx-control-validation-change event for Nintex Workflow Cloud
+    this.dispatchEvent(new CustomEvent('ntx-control-validation-change', {
+      detail: {
+        isValid: isValid,
+        message: !isValid ? 'A comment is required' : '',
+      },
+      bubbles: true,
+      composed: true,
+    }));
   }
 
   addComment() {
