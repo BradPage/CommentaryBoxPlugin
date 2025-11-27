@@ -63,51 +63,50 @@ class CommentsElement extends LitElement {
           description: 'Enter a number value of how many comments should be shown, older comments are hidden, entering 0 will show all comments, default is 5.',
           defaultValue: 5,
         },
-  outputobj: {
-    title: 'Comments Output',
-    type: 'object',
-    description: 'Workflow Comments Output Do Not Use',
-    isValueField: true,
-    properties: {
-      comments: {
-        type: 'object',  // object for Nintex deployment
-        description: 'Array of comments',
-        items: {
+        outputobj: {
+          title: 'Comments Output',
           type: 'object',
+          description: 'Workflow Comments Output Do Not Use',
+          isValueField: true,
           properties: {
-            firstName: { type: 'string', description: 'First Name', title: 'First Name' },
-            lastName: { type: 'string', description: 'Last Name', title: 'Last Name' },
-            email: { type: 'string', description: 'Email Address', title: 'Email Address' },
-            taskowner: { type: 'string',description: 'Task Owner', title: 'Task Owner' },
-            badge: { type: 'string', description: 'Badge Status', title: 'Badge Status' },
-            badgeStyle: { type: 'string', description: 'Badge Style', title: 'Badge Style' },
-            comment: { type: 'string', description: 'Comment', title: 'Comment' },
-            timestamp: { type: 'string', format: 'date-time', description: 'Log time', title: 'Log time' },
+            comments: {
+              type: 'array',
+              description: 'Array of comments',
+              items: {
+                type: 'object',
+                properties: {
+                  firstName: { type: 'string', description: 'First Name', title: 'First Name' },
+                  lastName: { type: 'string', description: 'Last Name', title: 'Last Name' },
+                  email: { type: 'string', description: 'Email Address', title: 'Email Address' },
+                  taskowner: { type: 'string',description: 'Task Owner', title: 'Task Owner' },
+                  badge: { type: 'string', description: 'Badge Status', title: 'Badge Status' },
+                  badgeStyle: { type: 'string', description: 'Badge Style', title: 'Badge Style' },
+                  comment: { type: 'string', description: 'Comment', title: 'Comment' },
+                  timestamp: { type: 'string', format: 'date-time', description: 'Log time', title: 'Log time' },
+                },
+              },
+            },
+            mostRecentComment: {
+              type: 'object',
+              description: 'Latest comment',
+              properties: {
+                firstName: { type: 'string', description: 'First Name', title: 'First Name' },
+                lastName: { type: 'string', description: 'Last Name', title: 'Last Name' },
+                email: { type: 'string', description: 'Email Address', title: 'Email Address' },
+                taskowner: { type: 'string',description: 'Task Owner', title: 'Task Owner' },
+                badge: { type: 'string', description: 'Badge Status', title: 'Badge Status' },
+                badgeStyle: { type: 'string', description: 'Badge Style', title: 'Badge Style' },
+                comment: { type: 'string', description: 'Comment', title: 'Comment' },
+                timestamp: { type: 'string', format: 'date-time', description: 'Log time', title: 'Log time' },
+              },
+            },
+            hasNewComment: {
+              type: 'boolean',
+              description: 'Indicates if a comment has been added in the current step',
+              title: 'Has New Comment'
+            },
           },
         },
-      },
-      mostRecentComment: {
-        type: 'object',
-        description: 'Latest comment',
-        properties: {
-          firstName: { type: 'string', description: 'First Name', title: 'First Name' },
-          lastName: { type: 'string', description: 'Last Name', title: 'Last Name' },
-          email: { type: 'string', description: 'Email Address', title: 'Email Address' },
-          taskowner: { type: 'string',description: 'Task Owner', title: 'Task Owner' },
-          badge: { type: 'string', description: 'Badge Status', title: 'Badge Status' },
-          badgeStyle: { type: 'string', description: 'Badge Style', title: 'Badge Style' },
-          comment: { type: 'string', description: 'Comment', title: 'Comment' },
-          timestamp: { type: 'string', format: 'date-time', description: 'Log time', title: 'Log time' },
-        },
-      },
-      hasNewComment: {
-        type: 'boolean',
-        description: 'Indicates if a comment has been added in the current step',
-        title: 'Has New Comment',
-        defaultValue: false  // Add this
-      },
-    },
-  },
       },
       events: ['ntx-value-change', 'ntx-control-validation-change'],
       standardProperties: { fieldLabel: true, description: true, readOnly: true, visibility: true },
