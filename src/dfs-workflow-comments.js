@@ -11,11 +11,11 @@ class CommentsElement extends LitElement {
   static getMetaConfig() {
     return {
       controlName: 'dfs-workflow-comments',
-      fallbackDisableSubmit: true,
+      fallbackDisableSubmit: false,
       description: 'Notes and comments',
       iconUrl:'https://bradpage.github.io/WebComponents/public/media/icons/icon.svg',
       groupName: 'DFS',
-      version: '2.1',
+      version: '1.0',
       properties: {
         commentsBorder: {
           title: 'Show Border on comments',
@@ -46,12 +46,6 @@ class CommentsElement extends LitElement {
           ],
           defaultValue: 'Default',
         },
-        requireComment: {
-          type: 'boolean',
-          title: 'Require Comment',
-          description: 'Mandate that a comment must be entered before proceeding',
-          defaultValue: false,
-        },
         inputobj: {
           type: 'object',
           title: 'Input Object',
@@ -70,7 +64,7 @@ class CommentsElement extends LitElement {
           isValueField: true,
           properties: {
             comments: {
-              type: 'object',
+              type: 'object', //change to object to deploy, change to array to use in the control
               description: 'Array of comments',
               items: {
                 type: 'object',
@@ -103,7 +97,7 @@ class CommentsElement extends LitElement {
           },
         },
       },
-      events: ['ntx-value-change', 'ntx-control-validation-change'],
+      events: ['ntx-value-change'],
       standardProperties: { fieldLabel: true, description: true, readOnly: true, visibility: true },
     };
   }
@@ -117,7 +111,6 @@ class CommentsElement extends LitElement {
     taskowner: { type: String },
     badge: { type: String },
     badgeStyle: { type: String },
-    requireComment: { type: Boolean },
     inputobj: { type: Object },
     workingComments: { type: Array },
     newComment: { type: String },
@@ -138,7 +131,6 @@ class CommentsElement extends LitElement {
     this.taskowner = '';
     this.badge = 'Update';  // Default Badge
     this.badgeStyle = 'Default';  // Default Badge Style
-    this.requireComment = false;
     this.inputobj = null;
     this.workingComments = [];
     this.newComment = '';
@@ -173,32 +165,6 @@ class CommentsElement extends LitElement {
     if (changedProperties.has('readOnly')) {
       this.requestUpdate();
     }
-
-    // Update validation state when requireComment, workingComments, or deletableIndices changes
-    if (changedProperties.has('requireComment') || 
-        changedProperties.has('workingComments') || 
-        changedProperties.has('deletableIndices')) {
-      this.updateValidationState();
-    }
-  }
-
-  updateValidationState() {
-    // Only dispatch if requireComment is true
-    if (!this.requireComment) {
-      return;
-    }
-
-    // Check if there's at least one deletable comment (added in current step)
-    const isValid = this.deletableIndices.length > 0;
-    
-    this.dispatchEvent(new CustomEvent('ntx-control-validation-change', {
-      detail: {
-        isValid: isValid,
-        validationMessage: !isValid ? 'A comment is required' : '',
-      },
-      bubbles: true,
-      composed: true,
-    }));
   }
 
   addComment() {
@@ -331,11 +297,6 @@ class CommentsElement extends LitElement {
   
       ${!this.readOnly ? html`
         <div class="mt-4">
-          ${this.requireComment && this.workingComments.length === 0 ? html`
-            <div class="alert alert-warning" role="alert">
-              A comment is required before proceeding.
-            </div>
-          ` : ''}
           <textarea
             class="comment-textarea"
             .value=${this.newComment}
@@ -348,7 +309,7 @@ class CommentsElement extends LitElement {
             @click=${this.addComment}
             ?disabled=${!this.newComment.trim()}
           >
-            ${sendIcon} Post Comment to Workflow
+            ${sendIcon} Add Comment
           </button>
         </div>
       ` : ''}
