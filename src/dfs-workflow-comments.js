@@ -57,6 +57,12 @@ class CommentsElement extends LitElement {
           description: 'Enter a number value of how many comments should be shown, older comments are hidden, entering 0 will show all comments, default is 5.',
           defaultValue: 5,
         },
+        newCommentsCount: {
+          type: 'integer',
+          title: 'New Comments Count',
+          description: 'Number of comments added in current step (use this in submission rules)',
+          isValueField: true,
+        },
         outputobj: {
           title: 'Comments Output',
           type: 'object',
@@ -94,11 +100,6 @@ class CommentsElement extends LitElement {
                 timestamp: { type: 'string', format: 'date-time', description: 'Log time', title: 'Log time' },
               },
             },
-            newCommentsCount: {
-              type: 'integer',
-              description: 'Number of comments added in current step (deletable comments)',
-              title: 'New Comments Count'
-            },
           },
         },
       },
@@ -124,6 +125,7 @@ class CommentsElement extends LitElement {
     historyLimit: { type: Number },
     showAll: { type: Boolean },
     outputobj: { type: Object },
+    newCommentsCount: { type: Number },
   };
 
   constructor() {
@@ -142,6 +144,7 @@ class CommentsElement extends LitElement {
     this.deletableIndices = [];
     this.historyLimit = 5;
     this.showAll = false;
+    this.newCommentsCount = 0;
   }
 
   toggleShowAll() {
@@ -197,10 +200,12 @@ class CommentsElement extends LitElement {
     const outputobj = {
       comments: this.workingComments,
       mostRecentComment,
-      newCommentsCount: this.deletableIndices.length
     };
 
     this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
+
+    // Update newCommentsCount property value
+    this.newCommentsCount = this.deletableIndices.length;
 
     // Clear the newComment field
     this.newComment = '';
@@ -220,10 +225,12 @@ class CommentsElement extends LitElement {
     const outputobj = {
       comments: this.workingComments,
       mostRecentComment,
-      newCommentsCount: this.deletableIndices.length
     };
   
     this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
+
+    // Update newCommentsCount property value
+    this.newCommentsCount = this.deletableIndices.length;
   }
   
   handleCommentChange(e) {
