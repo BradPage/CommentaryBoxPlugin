@@ -186,14 +186,17 @@ class CommentsElement extends LitElement {
   }
 
   updateValidationState() {
-    // Determine if the control is valid
-    const isValid = !this.requireComment || this.workingComments.length > 0;
+    // Only dispatch if requireComment is true
+    if (!this.requireComment) {
+      return;
+    }
+
+    const isValid = this.workingComments.length > 0;
     
-    // Dispatch ntx-control-validation-change event for Nintex Workflow Cloud
     this.dispatchEvent(new CustomEvent('ntx-control-validation-change', {
       detail: {
         isValid: isValid,
-        message: !isValid ? 'A comment is required' : '',
+        validationMessage: !isValid ? 'A comment is required' : '',
       },
       bubbles: true,
       composed: true,
