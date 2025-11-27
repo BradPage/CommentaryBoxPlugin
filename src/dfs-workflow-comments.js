@@ -15,7 +15,7 @@ class CommentsElement extends LitElement {
       description: 'Notes and comments',
       iconUrl:'https://bradpage.github.io/WebComponents/public/media/icons/icon.svg',
       groupName: 'DFS',
-      version: '1.0',
+      version: '2.0',
       properties: {
         commentsBorder: {
           title: 'Show Border on comments',
@@ -46,6 +46,12 @@ class CommentsElement extends LitElement {
           ],
           defaultValue: 'Default',
         },
+        requireComment: {
+          type: 'boolean',
+          title: 'Require Comment',
+          description: 'Mandate that a comment must be entered before proceeding',
+          defaultValue: false,
+        },
         inputobj: {
           type: 'object',
           title: 'Input Object',
@@ -64,7 +70,7 @@ class CommentsElement extends LitElement {
           isValueField: true,
           properties: {
             comments: {
-              type: 'array', //change to object to deploy, change to array to use in the control
+              type: 'object', //change to object to deploy, change to array to use in the control
               description: 'Array of comments',
               items: {
                 type: 'object',
@@ -111,6 +117,7 @@ class CommentsElement extends LitElement {
     taskowner: { type: String },
     badge: { type: String },
     badgeStyle: { type: String },
+    requireComment: { type: Boolean },
     inputobj: { type: Object },
     workingComments: { type: Array },
     newComment: { type: String },
@@ -131,6 +138,7 @@ class CommentsElement extends LitElement {
     this.taskowner = '';
     this.badge = 'Update';  // Default Badge
     this.badgeStyle = 'Default';  // Default Badge Style
+    this.requireComment = false;
     this.inputobj = null;
     this.workingComments = [];
     this.newComment = '';
@@ -297,6 +305,11 @@ class CommentsElement extends LitElement {
   
       ${!this.readOnly ? html`
         <div class="mt-4">
+          ${this.requireComment && this.workingComments.length === 0 ? html`
+            <div class="alert alert-warning" role="alert">
+              A comment is required before proceeding.
+            </div>
+          ` : ''}
           <textarea
             class="comment-textarea"
             .value=${this.newComment}
@@ -309,7 +322,7 @@ class CommentsElement extends LitElement {
             @click=${this.addComment}
             ?disabled=${!this.newComment.trim()}
           >
-            ${sendIcon} Add Comment
+            ${sendIcon} Post Comment to Workflow
           </button>
         </div>
       ` : ''}
