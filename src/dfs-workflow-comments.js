@@ -147,19 +147,6 @@ class CommentsElement extends LitElement {
     this.showAll = false;
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    // Set initial validation state when component connects
-    this.updateValidationState();
-    
-    // Dispatch initial output state
-    const outputobj = {
-      comments: this.workingComments,
-      mostRecentComment: null,
-    };
-    this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
-  }
-
   toggleShowAll() {
     this.showAll = !this.showAll;
   }
