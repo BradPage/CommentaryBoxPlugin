@@ -169,18 +169,20 @@ class CommentsElement extends LitElement {
       this.workingComments = [...this.inputobj.comments];
       this.deletableIndices = []; // Reset deletable indices when inputobj changes
     }
-  
+
     // Check for changes to commentsBorder or commentsStriped and trigger re-render
     if (changedProperties.has('commentsBorder') || changedProperties.has('commentsStriped')) {
       this.requestUpdate();
     }
-  
+    
     if (changedProperties.has('readOnly')) {
       this.requestUpdate();
     }
 
-    // Update validation state when requireComment changes or workingComments changes
-    if (changedProperties.has('requireComment') || changedProperties.has('workingComments')) {
+    // Update validation state when requireComment, workingComments, or deletableIndices changes
+    if (changedProperties.has('requireComment') || 
+        changedProperties.has('workingComments') || 
+        changedProperties.has('deletableIndices')) {
       this.updateValidationState();
     }
   }
@@ -191,7 +193,8 @@ class CommentsElement extends LitElement {
       return;
     }
 
-    const isValid = this.workingComments.length > 0;
+    // Check if there's at least one deletable comment (added in current step)
+    const isValid = this.deletableIndices.length > 0;
     
     this.dispatchEvent(new CustomEvent('ntx-control-validation-change', {
       detail: {
