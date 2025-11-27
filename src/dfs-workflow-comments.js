@@ -15,7 +15,7 @@ class CommentsElement extends LitElement {
       description: 'Notes and comments',
       iconUrl:'https://bradpage.github.io/WebComponents/public/media/icons/icon.svg',
       groupName: 'DFS',
-      version: '1.0',
+      version: '1.1',
       properties: {
         commentsBorder: {
           title: 'Show Border on comments',
@@ -93,6 +93,11 @@ class CommentsElement extends LitElement {
                 comment: { type: 'string', description: 'Comment', title: 'Comment' },
                 timestamp: { type: 'string', format: 'date-time', description: 'Log time', title: 'Log time' },
               },
+            },
+            newCommentsCount: {
+              type: 'integer',
+              description: 'Number of comments added in current step (deletable comments)',
+              title: 'New Comments Count'
             },
           },
         },
@@ -192,6 +197,7 @@ class CommentsElement extends LitElement {
     const outputobj = {
       comments: this.workingComments,
       mostRecentComment,
+      newCommentsCount: this.deletableIndices.length
     };
 
     this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
@@ -214,6 +220,7 @@ class CommentsElement extends LitElement {
     const outputobj = {
       comments: this.workingComments,
       mostRecentComment,
+      newCommentsCount: this.deletableIndices.length
     };
   
     this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
