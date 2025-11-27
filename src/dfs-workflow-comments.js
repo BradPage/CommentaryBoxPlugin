@@ -15,7 +15,7 @@ class CommentsElement extends LitElement {
       description: 'Notes and comments',
       iconUrl:'https://bradpage.github.io/WebComponents/public/media/icons/icon.svg',
       groupName: 'DFS',
-      version: '1.1',
+      version: '1.2',
       properties: {
         commentsBorder: {
           title: 'Show Border on comments',
@@ -61,6 +61,7 @@ class CommentsElement extends LitElement {
           type: 'integer',
           title: 'New Comments Count',
           description: 'Number of comments added in current step (use this in submission rules)',
+          isValueField: true,
         },
         outputobj: {
           title: 'Comments Output',
@@ -174,6 +175,28 @@ class CommentsElement extends LitElement {
     }
   }
 
+  // Helper method to dispatch both outputobj and newCommentsCount
+  dispatchOutputs() {
+    const mostRecentComment = this.workingComments[this.workingComments.length - 1] || null;
+    const outputobj = {
+      comments: this.workingComments,
+      mostRecentComment,
+    };
+
+    // Dispatch outputobj
+    this.dispatchEvent(new CustomEvent('ntx-value-change', { 
+      detail: outputobj,
+      bubbles: true,
+      composed: true 
+    }));
+
+    // Update and dispatch newCommentsCount separately
+    this.newCommentsCount = this.deletableIndices.length;
+    
+    // Force a property update notification
+    this.requestUpdate('newCommentsCount');
+  }
+
   addComment() {
     const timestamp = new Date().toISOString();
 
@@ -194,17 +217,8 @@ class CommentsElement extends LitElement {
     // Mark the new comment as deletable
     this.deletableIndices = [...this.deletableIndices, this.workingComments.length - 1];
 
-    // Dispatch the updated outputobj
-    const mostRecentComment = newEntry;
-    const outputobj = {
-      comments: this.workingComments,
-      mostRecentComment,
-    };
-
-    this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
-
-    // Update newCommentsCount property value
-    this.newCommentsCount = this.deletableIndices.length;
+    // Dispatch outputs
+    this.dispatchOutputs();
 
     // Clear the newComment field
     this.newComment = '';
@@ -219,17 +233,8 @@ class CommentsElement extends LitElement {
       .filter(i => i !== index) // Remove the deleted index
       .map(i => (i > index ? i - 1 : i)); // Shift indices down for remaining comments after the deleted index
   
-    // Dispatch the updated outputobj
-    const mostRecentComment = this.workingComments[this.workingComments.length - 1] || null;
-    const outputobj = {
-      comments: this.workingComments,
-      mostRecentComment,
-    };
-  
-    this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
-
-    // Update newCommentsCount property value
-    this.newCommentsCount = this.deletableIndices.length;
+    // Dispatch outputs
+    this.dispatchOutputs();
   }
   
   handleCommentChange(e) {
