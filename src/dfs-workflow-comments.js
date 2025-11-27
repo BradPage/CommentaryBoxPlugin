@@ -70,7 +70,7 @@ class CommentsElement extends LitElement {
           isValueField: true,
           properties: {
             comments: {
-              type: 'array',
+              type: 'object',
               description: 'Array of comments',
               items: {
                 type: 'object',
@@ -99,11 +99,6 @@ class CommentsElement extends LitElement {
                 comment: { type: 'string', description: 'Comment', title: 'Comment' },
                 timestamp: { type: 'string', format: 'date-time', description: 'Log time', title: 'Log time' },
               },
-            },
-            hasNewComment: {
-              type: 'boolean',
-              description: 'Indicates if a comment has been added in the current step',
-              title: 'Has New Comment'
             },
           },
         },
