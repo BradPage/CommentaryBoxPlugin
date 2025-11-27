@@ -70,7 +70,7 @@ class CommentsElement extends LitElement {
           isValueField: true,
           properties: {
             comments: {
-              type: 'object',
+              type: 'array',
               description: 'Array of comments',
               items: {
                 type: 'object',
