@@ -61,7 +61,6 @@ class CommentsElement extends LitElement {
           type: 'integer',
           title: 'New Comments Count',
           description: 'Number of comments added in current step (use this in submission rules)',
-          isValueField: true,
         },
         outputobj: {
           title: 'Comments Output',
