@@ -57,11 +57,6 @@ class CommentsElement extends LitElement {
           description: 'Enter a number value of how many comments should be shown, older comments are hidden, entering 0 will show all comments, default is 5.',
           defaultValue: 5,
         },
-        newCommentAdded: {
-          title: 'New Comment Added',
-          type: 'boolean',
-          description: 'True when a new deletable comment exists. Use this in submission rules.',
-        },
         outputobj: {
           title: 'Comments Output',
           type: 'object',
@@ -98,6 +93,11 @@ class CommentsElement extends LitElement {
                 comment: { type: 'string', description: 'Comment', title: 'Comment' },
                 timestamp: { type: 'string', format: 'date-time', description: 'Log time', title: 'Log time' },
               },
+            },
+            newCommentAdded: {
+              type: 'boolean',
+              description: 'True when a new deletable comment exists. Use this in submission rules.',
+              title: 'New Comment Added'
             },
           },
         },
@@ -196,19 +196,20 @@ class CommentsElement extends LitElement {
   updateNewCommentFlag() {
     const hasNew = this.deletableIndices.length > 0;
 
-    // Update the property directly
+    // Update the property directly for Lit reactivity
     this.newCommentAdded = hasNew;
 
-    // Build the full payload with the property Nintex reads as the "value"
+    // Build the full payload INCLUDING newCommentAdded inside the object
     this.outputobj = {
       comments: this.workingComments,
       mostRecentComment: this.workingComments[this.workingComments.length - 1] || null,
+      newCommentAdded: hasNew
     };
 
     // Debug logging
-    console.log('dispatching ntx-value-change', this.outputobj, 'newCommentAdded:', this.newCommentAdded);
+    console.log('dispatching ntx-value-change', this.outputobj);
 
-    // Dispatch the object for outputobj
+    // Dispatch the object
     this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: this.outputobj }));
   }
 
