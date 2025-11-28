@@ -155,6 +155,7 @@ class CommentsElement extends LitElement {
     if (changedProperties.has('inputobj') && Array.isArray(this.inputobj?.comments)) {
       this.workingComments = [...this.inputobj.comments];
       this.deletableIndices = []; // Reset deletable indices when inputobj changes
+      this.updateNewCommentFlag(); // Force newCommentAdded = false for old comments
     }
   
     // Check for changes to commentsBorder or commentsStriped and trigger re-render
@@ -169,7 +170,6 @@ class CommentsElement extends LitElement {
     // Validate when inputobj changes (older comments should not count)
     if (changedProperties.has('inputobj')) {
       this.validateCommentRequirement();
-      this.setValidityState();
     }
   }
 
@@ -186,17 +186,17 @@ class CommentsElement extends LitElement {
     );
   }
 
-  setValidityState() {
-    const hasNewComment = this.deletableIndices.length > 0;
-    // Add this property dynamically (not declared in schema)
+  updateNewCommentFlag() {
+    const hasNew = this.deletableIndices.length > 0;
+
     this.outputobj = {
-      ...this.outputobj,
-      isValidNewComment: hasNewComment
+      comments: this.workingComments,
+      mostRecentComment: this.workingComments[this.workingComments.length - 1] || null,
+      newCommentAdded: hasNew   // <-- Nintex rule will check this
     };
+
     this.dispatchEvent(
-      new CustomEvent('ntx-value-change', {
-        detail: this.outputobj
-      })
+      new CustomEvent("ntx-value-change", { detail: this.outputobj })
     );
   }
 
@@ -220,20 +220,8 @@ class CommentsElement extends LitElement {
     // Mark the new comment as deletable
     this.deletableIndices = [...this.deletableIndices, this.workingComments.length - 1];
 
-    // Dispatch the updated outputobj
-    const mostRecentComment = newEntry;
-    const outputobj = {
-      comments: this.workingComments,
-      mostRecentComment,
-    };
-
-    this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
-
-    // Validate comment requirement
-    this.validateCommentRequirement();
-
-    // Set validity state
-    this.setValidityState();
+    // Update the flag and dispatch
+    this.updateNewCommentFlag();
 
     // Clear the newComment field
     this.newComment = '';
@@ -248,20 +236,8 @@ class CommentsElement extends LitElement {
       .filter(i => i !== index) // Remove the deleted index
       .map(i => (i > index ? i - 1 : i)); // Shift indices down for remaining comments after the deleted index
   
-    // Dispatch the updated outputobj
-    const mostRecentComment = this.workingComments[this.workingComments.length - 1] || null;
-    const outputobj = {
-      comments: this.workingComments,
-      mostRecentComment,
-    };
-  
-    this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
-
-    // Validate comment requirement
-    this.validateCommentRequirement();
-
-    // Set validity state
-    this.setValidityState();
+    // Update the flag and dispatch
+    this.updateNewCommentFlag();
   }
   
   handleCommentChange(e) {
