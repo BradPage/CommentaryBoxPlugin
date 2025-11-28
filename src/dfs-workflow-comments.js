@@ -58,10 +58,9 @@ class CommentsElement extends LitElement {
           defaultValue: 5,
         },
         newCommentAdded: {
-          title: 'New Comment Added (internal)',
+          title: 'New Comment Added',
           type: 'boolean',
-          description: 'Internal flag: true when a new deletable comment exists. Used by rules.',
-          isValueField: true
+          description: 'True when a new deletable comment exists. Use this in submission rules.',
         },
         outputobj: {
           title: 'Comments Output',
@@ -125,6 +124,7 @@ class CommentsElement extends LitElement {
     historyLimit: { type: Number },
     showAll: { type: Boolean },
     outputobj: { type: Object },
+    newCommentAdded: { type: Boolean },
   };
 
   constructor() {
@@ -143,6 +143,7 @@ class CommentsElement extends LitElement {
     this.deletableIndices = [];
     this.historyLimit = 5;
     this.showAll = false;
+    this.newCommentAdded = false;
   }
 
   toggleShowAll() {
@@ -195,17 +196,19 @@ class CommentsElement extends LitElement {
   updateNewCommentFlag() {
     const hasNew = this.deletableIndices.length > 0;
 
+    // Update the property directly
+    this.newCommentAdded = hasNew;
+
     // Build the full payload with the property Nintex reads as the "value"
     this.outputobj = {
       comments: this.workingComments,
       mostRecentComment: this.workingComments[this.workingComments.length - 1] || null,
-      newCommentAdded: hasNew
     };
 
     // Debug logging
-    console.log('dispatching ntx-value-change', this.outputobj);
+    console.log('dispatching ntx-value-change', this.outputobj, 'newCommentAdded:', this.newCommentAdded);
 
-    // Dispatch the object — Nintex will read `.newCommentAdded` because it's marked `isValueField`
+    // Dispatch the object for outputobj
     this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: this.outputobj }));
   }
 
