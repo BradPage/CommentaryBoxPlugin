@@ -1,10 +1,10 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/dfs-workflow-comments.js',
+  entry: './src/dfs-workflow-comments-bp.js',
   mode: 'production',
   output: {
-    filename: 'dfs-workflow-comments.js',
+    filename: 'dfs-workflow-comments-bp.js',
     path: path.resolve(__dirname, 'dist'),
   },
   module: {
