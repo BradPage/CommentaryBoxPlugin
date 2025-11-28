@@ -11,7 +11,7 @@ class CommentsElement extends LitElement {
   static getMetaConfig() {
     return {
       controlName: 'dfs-workflow-comments',
-      fallbackDisableSubmit: false,
+      fallbackDisableSubmit: true,  // This prevents submission when validation fails
       description: 'Notes and comments',
       iconUrl:'https://bradpage.github.io/WebComponents/public/media/icons/icon.svg',
       groupName: 'DFS',
@@ -45,6 +45,12 @@ class CommentsElement extends LitElement {
             'Danger', 'Warning', 'Info', 'Light', 'Dark',
           ],
           defaultValue: 'Default',
+        },
+        requireComment: {
+          type: 'boolean',
+          title: 'Require New Comment',
+          description: 'When enabled, user must add at least one new comment (with delete button) before submitting the form',
+          defaultValue: false,
         },
         inputobj: {
           type: 'object',
@@ -94,15 +100,10 @@ class CommentsElement extends LitElement {
                 timestamp: { type: 'string', format: 'date-time', description: 'Log time', title: 'Log time' },
               },
             },
-            newCommentsCount: {
-              type: 'integer',
-              description: 'Number of comments added in current step (use in calculated fields)',
-              title: 'New Comments Count'
-            },
           },
         },
       },
-      events: ['ntx-value-change'],
+      events: ['ntx-value-change', 'ntx-control-validation-change'],
       standardProperties: { fieldLabel: true, description: true, readOnly: true, visibility: true },
     };
   }
@@ -116,6 +117,7 @@ class CommentsElement extends LitElement {
     taskowner: { type: String },
     badge: { type: String },
     badgeStyle: { type: String },
+    requireComment: { type: Boolean },
     inputobj: { type: Object },
     workingComments: { type: Array },
     newComment: { type: String },
@@ -136,12 +138,19 @@ class CommentsElement extends LitElement {
     this.taskowner = '';
     this.badge = 'Update';  // Default Badge
     this.badgeStyle = 'Default';  // Default Badge Style
+    this.requireComment = false;
     this.inputobj = null;
     this.workingComments = [];
     this.newComment = '';
     this.deletableIndices = [];
     this.historyLimit = 5;
     this.showAll = false;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    // Set initial validation state when component connects
+    this.updateValidationState();
   }
 
   toggleShowAll() {
@@ -170,6 +179,41 @@ class CommentsElement extends LitElement {
     if (changedProperties.has('readOnly')) {
       this.requestUpdate();
     }
+
+    // Update validation state when requireComment, workingComments, or deletableIndices changes
+    if (changedProperties.has('requireComment') || 
+        changedProperties.has('workingComments') || 
+        changedProperties.has('deletableIndices')) {
+      this.updateValidationState();
+    }
+  }
+
+  updateValidationState() {
+    // Only validate if requireComment is enabled
+    if (!this.requireComment) {
+      // When not required, always valid
+      this.dispatchEvent(new CustomEvent('ntx-control-validation-change', {
+        detail: {
+          isValid: true,
+          validationMessage: '',
+        },
+        bubbles: true,
+        composed: true,
+      }));
+      return;
+    }
+
+    // Check if there's at least one deletable comment (added in current step)
+    const isValid = this.deletableIndices.length > 0;
+    
+    this.dispatchEvent(new CustomEvent('ntx-control-validation-change', {
+      detail: {
+        isValid: isValid,
+        validationMessage: !isValid ? 'A new comment is required before proceeding' : '',
+      },
+      bubbles: true,
+      composed: true,
+    }));
   }
 
   addComment() {
@@ -192,12 +236,11 @@ class CommentsElement extends LitElement {
     // Mark the new comment as deletable
     this.deletableIndices = [...this.deletableIndices, this.workingComments.length - 1];
 
-    // Dispatch the updated outputobj with newCommentsCount included
+    // Dispatch the updated outputobj
     const mostRecentComment = newEntry;
     const outputobj = {
       comments: this.workingComments,
       mostRecentComment,
-      newCommentsCount: this.deletableIndices.length
     };
 
     this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
@@ -215,12 +258,11 @@ class CommentsElement extends LitElement {
       .filter(i => i !== index) // Remove the deleted index
       .map(i => (i > index ? i - 1 : i)); // Shift indices down for remaining comments after the deleted index
   
-    // Dispatch the updated outputobj with newCommentsCount included
+    // Dispatch the updated outputobj
     const mostRecentComment = this.workingComments[this.workingComments.length - 1] || null;
     const outputobj = {
       comments: this.workingComments,
       mostRecentComment,
-      newCommentsCount: this.deletableIndices.length
     };
   
     this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
@@ -304,6 +346,11 @@ class CommentsElement extends LitElement {
   
       ${!this.readOnly ? html`
         <div class="mt-4">
+          ${this.requireComment && this.deletableIndices.length === 0 ? html`
+            <div class="alert alert-warning" role="alert">
+              A new comment is required before proceeding.
+            </div>
+          ` : ''}
           <textarea
             class="comment-textarea"
             .value=${this.newComment}
