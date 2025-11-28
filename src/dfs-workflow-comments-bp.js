@@ -10,7 +10,7 @@ class CommentsElement extends LitElement {
 
   static getMetaConfig() {
     return {
-      controlName: 'dfs-workflow-comments-2',
+      controlName: 'dfs-workflow-comments-bp',
       fallbackDisableSubmit: false,
       description: 'Notes and comments',
       iconUrl:'https://bradpage.github.io/WebComponents/public/media/icons/icon.svg',
@@ -368,4 +368,4 @@ class CommentsElement extends LitElement {
   }
 }
 
-customElements.define('dfs-workflow-comments', CommentsElement);
+customElements.define('dfs-workflow-comments-bp', CommentsElement);
