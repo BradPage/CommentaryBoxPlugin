@@ -56,7 +56,7 @@ class CommentsElement extends LitElement {
       description: 'Notes and comments',
       iconUrl:'https://bradpage.github.io/WebComponents/public/media/icons/icon.svg',
       groupName: 'DFS',
-      version: '3.0',
+      version: '2.0',
       properties: {
         commentsBorder: {
           title: 'Show Border on comments',
@@ -347,12 +347,16 @@ class CommentsElement extends LitElement {
           ${displayedComments.map((item, index) => html`
             <div class="card comment-card shadow-sm" style="border-left: 4px solid ${this.getBorderColor(item.badgeStyle)}">
               <div class="card-body">
-                <div class="d-flex flex-row align-items-center">
-                  <h6 class="fw-bold mb-0">${item.firstName} ${item.lastName || ''}</h6>
+                <div class="d-flex flex-row align-items-center gap-2">
+                  <h6 class="fw-bold mb-0">
+                    <span class="me-1">👤</span>${item.firstName} ${item.lastName || ''}
+                  </h6>
                   ${item.taskowner ? html`
-                    <span class="badge bg-secondary rounded-pill text-dark ms-2">${item.taskowner}</span>
+                    <span class="badge bg-secondary rounded-pill">
+                      <span class="me-1">👔</span>${item.taskowner}
+                    </span>
                   ` : ''}
-                  <span class="badge ${this.getBadgeClass(item.badgeStyle) || 'Default'} rounded-pill ms-2">
+                  <span class="badge ${this.getBadgeClass(item.badgeStyle) || 'Default'} rounded-pill">
                     ${item.badge || 'Update'}
                   </span>
                   ${this.deletableIndices.includes(index) && !this.readOnly ? html`
@@ -361,8 +365,9 @@ class CommentsElement extends LitElement {
                     </button>
                   ` : ''}
                 </div>
-                <div class="d-flex flex-row align-items-center">
+                <div class="d-flex flex-row align-items-center mt-1">
                   <p class="mb-0 text-muted comment-date">
+                    <span class="me-1">🕒</span>
                     ${new Date(item.timestamp).toLocaleString('en-GB', {
                       weekday: 'short',
                       year: 'numeric',
@@ -390,7 +395,7 @@ class CommentsElement extends LitElement {
             class="comment-textarea"
             .value=${this.newComment}
             @input=${this.handleCommentChange}
-            placeholder="Write your comment here..."
+            placeholder="✍️ Write your comment here..."
           ></textarea>
           <button
             class="btn btn-default d-flex align-items-center"
