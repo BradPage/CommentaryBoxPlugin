@@ -169,6 +169,7 @@ class CommentsElement extends LitElement {
     // Validate when inputobj changes (older comments should not count)
     if (changedProperties.has('inputobj')) {
       this.validateCommentRequirement();
+      this.setValidityState();
     }
   }
 
@@ -181,6 +182,20 @@ class CommentsElement extends LitElement {
         detail: { isValid: hasNewComment },
         bubbles: true,
         composed: true
+      })
+    );
+  }
+
+  setValidityState() {
+    const hasNewComment = this.deletableIndices.length > 0;
+    // Add this property dynamically (not declared in schema)
+    this.outputobj = {
+      ...this.outputobj,
+      isValidNewComment: hasNewComment
+    };
+    this.dispatchEvent(
+      new CustomEvent('ntx-value-change', {
+        detail: this.outputobj
       })
     );
   }
@@ -217,6 +232,9 @@ class CommentsElement extends LitElement {
     // Validate comment requirement
     this.validateCommentRequirement();
 
+    // Set validity state
+    this.setValidityState();
+
     // Clear the newComment field
     this.newComment = '';
   }
@@ -241,6 +259,9 @@ class CommentsElement extends LitElement {
 
     // Validate comment requirement
     this.validateCommentRequirement();
+
+    // Set validity state
+    this.setValidityState();
   }
   
   handleCommentChange(e) {
