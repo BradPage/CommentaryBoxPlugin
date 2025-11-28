@@ -15,7 +15,7 @@ class CommentsElement extends LitElement {
       description: 'Notes and comments',
       iconUrl:'https://bradpage.github.io/WebComponents/public/media/icons/icon.svg',
       groupName: 'DFS',
-      version: '1.3',
+      version: '2.0',
       properties: {
         commentsBorder: {
           title: 'Show Border on comments',
@@ -57,11 +57,6 @@ class CommentsElement extends LitElement {
           description: 'Enter a number value of how many comments should be shown, older comments are hidden, entering 0 will show all comments, default is 5.',
           defaultValue: 5,
         },
-        counterFieldId: {
-          type: 'string',
-          title: 'Counter Field ID',
-          description: 'Enter the CSS ID of a hidden number field that will track the count (e.g., "hiddenCounter"). Leave blank if not using submission rules.',
-        },
         outputobj: {
           title: 'Comments Output',
           type: 'object',
@@ -99,6 +94,11 @@ class CommentsElement extends LitElement {
                 timestamp: { type: 'string', format: 'date-time', description: 'Log time', title: 'Log time' },
               },
             },
+            newCommentsCount: {
+              type: 'integer',
+              description: 'Number of comments added in current step (use in calculated fields)',
+              title: 'New Comments Count'
+            },
           },
         },
       },
@@ -124,7 +124,6 @@ class CommentsElement extends LitElement {
     historyLimit: { type: Number },
     showAll: { type: Boolean },
     outputobj: { type: Object },
-    counterFieldId: { type: String },
   };
 
   constructor() {
@@ -143,7 +142,6 @@ class CommentsElement extends LitElement {
     this.deletableIndices = [];
     this.historyLimit = 5;
     this.showAll = false;
-    this.counterFieldId = '';
   }
 
   toggleShowAll() {
@@ -174,27 +172,6 @@ class CommentsElement extends LitElement {
     }
   }
 
-  // Helper method to update the external counter field
-  updateCounterField() {
-    if (!this.counterFieldId) return;
-
-    try {
-      // Try to find the field by CSS ID
-      const counterInput = document.getElementById(this.counterFieldId);
-      
-      if (counterInput) {
-        // Set the value to the count of deletable comments
-        counterInput.value = this.deletableIndices.length;
-        
-        // Trigger change event so Nintex picks it up
-        counterInput.dispatchEvent(new Event('change', { bubbles: true }));
-        counterInput.dispatchEvent(new Event('input', { bubbles: true }));
-      }
-    } catch (error) {
-      console.warn('Could not update counter field:', error);
-    }
-  }
-
   addComment() {
     const timestamp = new Date().toISOString();
 
@@ -215,17 +192,15 @@ class CommentsElement extends LitElement {
     // Mark the new comment as deletable
     this.deletableIndices = [...this.deletableIndices, this.workingComments.length - 1];
 
-    // Dispatch the updated outputobj
+    // Dispatch the updated outputobj with newCommentsCount included
     const mostRecentComment = newEntry;
     const outputobj = {
       comments: this.workingComments,
       mostRecentComment,
+      newCommentsCount: this.deletableIndices.length
     };
 
     this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
-
-    // Update the external counter field
-    this.updateCounterField();
 
     // Clear the newComment field
     this.newComment = '';
@@ -240,17 +215,15 @@ class CommentsElement extends LitElement {
       .filter(i => i !== index) // Remove the deleted index
       .map(i => (i > index ? i - 1 : i)); // Shift indices down for remaining comments after the deleted index
   
-    // Dispatch the updated outputobj
+    // Dispatch the updated outputobj with newCommentsCount included
     const mostRecentComment = this.workingComments[this.workingComments.length - 1] || null;
     const outputobj = {
       comments: this.workingComments,
       mostRecentComment,
+      newCommentsCount: this.deletableIndices.length
     };
   
     this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
-
-    // Update the external counter field
-    this.updateCounterField();
   }
   
   handleCommentChange(e) {
