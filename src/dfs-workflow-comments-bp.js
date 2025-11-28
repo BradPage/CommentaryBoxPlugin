@@ -5,17 +5,81 @@ import { sendIcon, deleteIcon, expandIcon } from './icons.js';
 class CommentsElement extends LitElement {
 
   static get styles() {
-    return componentStyles;
+    return [
+      componentStyles,
+      css`
+        /* Modern Card Design with Shadows & Hover Effects */
+        .comment-card {
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          margin-bottom: 1rem;
+          border-radius: 8px;
+          overflow: hidden;
+          animation: slideIn 0.3s ease-out;
+        }
+
+        .comment-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        }
+
+        /* Slide-in Animation for New Comments */
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        /* Gradient Background for Comment Input Area */
+        .comment-input-wrapper {
+          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          padding: 1.5rem;
+          border-radius: 8px;
+          margin-top: 1rem;
+        }
+
+        /* V2 Header Badge Styling */
+        .v2-header {
+          background: linear-gradient(135deg, #e7f3ff 0%, #f0f7ff 100%);
+          border-left: 4px solid #0d6efd;
+        }
+
+        /* Improved Typography */
+        .comment-text {
+          line-height: 1.6;
+          color: #2c3e50;
+          font-size: 0.95rem;
+        }
+
+        .comment-date {
+          font-size: 0.85rem;
+          font-weight: 500;
+        }
+
+        /* Empty State Design */
+        .empty-state {
+          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .empty-state-icon {
+          font-size: 3rem;
+        }
+      `
+    ];
   }
 
   static getMetaConfig() {
     return {
       controlName: 'dfs-workflow-comments-bp',
       fallbackDisableSubmit: false,
-      description: 'Notes and comments',
+      description: 'Notes and comments (Enhanced V2)',
       iconUrl:'https://bradpage.github.io/WebComponents/public/media/icons/icon.svg',
       groupName: 'DFS',
-      version: '1.0',
+      version: '2.0',
       properties: {
         commentsBorder: {
           title: 'Show Border on comments',
@@ -257,6 +321,20 @@ class CommentsElement extends LitElement {
     this.newComment = e.target.value;
   }
 
+  // Helper method to get border color based on badge style
+  getBorderColor(badgeStyle) {
+    const colors = {
+      Success: '#198754',
+      Danger: '#dc3545',
+      Warning: '#ffc107',
+      Info: '#0dcaf0',
+      Primary: '#0d6efd',
+      Secondary: '#6c757d',
+      Default: '#0d6efd'
+    };
+    return colors[badgeStyle] || colors.Default;
+  }
+
   render() {
     const showAllComments = this.historyLimit === 0 || this.showAll;
     const displayedComments = showAllComments ? this.workingComments : this.workingComments.slice(-this.historyLimit);
@@ -270,34 +348,53 @@ class CommentsElement extends LitElement {
     return html`
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" />
       
+      <!-- V2 Header Badge -->
+      <div class="d-flex align-items-center mb-3 p-3 v2-header rounded">
+        <span class="badge bg-primary me-2 px-3 py-2">V2</span>
+        <div>
+          <strong class="d-block">Enhanced Comments System</strong>
+          <small class="text-muted">Improved validation and tracking</small>
+        </div>
+      </div>
+      
       <!-- Show "Show All Comments" button if there are more comments than the limit -->
       ${this.historyLimit > 0 && this.workingComments.length > this.historyLimit ? html`
         <div class="d-flex justify-content-center mb-3">
           <button 
-            class="btn btn-default rounded-pill d-flex align-items-center"
+            class="btn btn-primary rounded-pill d-flex align-items-center shadow-sm"
             type="button"
             @click=${this.toggleShowAll}
           >
             ${expandIcon} 
-            <div class="ms-1">
-            ${this.showAll ? ' Hide All Comments' : ' Show All Comments'}
+            <div class="ms-2">
+              ${this.showAll ? 'Hide All Comments' : 'Show All Comments'}
             </div>
           </button>
         </div>
       ` : ''}
   
-      <!-- Display the comments with applied styles -->
-      ${displayedComments.length > 0 ? html`
+      <!-- Empty State or Display the comments -->
+      ${displayedComments.length === 0 ? html`
+        <div class="text-center p-5 empty-state rounded shadow-sm">
+          <div class="empty-state-icon mb-3">💬</div>
+          <h5 class="text-muted mb-2">No comments yet</h5>
+          <p class="text-muted mb-0">Be the first to add a comment to this workflow!</p>
+        </div>
+      ` : html`
         <div class="comments-history ${commentsHistoryClasses}">
           ${displayedComments.map((item, index) => html`
-            <div class="card comment-card">
+            <div class="card comment-card shadow-sm" style="border-left: 4px solid ${this.getBorderColor(item.badgeStyle)}">
               <div class="card-body">
-                <div class="d-flex flex-row align-items-center">
-                  <h6 class="fw-bold mb-0">${item.firstName} ${item.lastName || ''}</h6>
+                <div class="d-flex flex-row align-items-center gap-2">
+                  <h6 class="fw-bold mb-0">
+                    <span class="me-1">👤</span>${item.firstName} ${item.lastName || ''}
+                  </h6>
                   ${item.taskowner ? html`
-                    <span class="badge bg-secondary rounded-pill text-dark ms-2">${item.taskowner}</span>
+                    <span class="badge bg-secondary rounded-pill">
+                      <span class="me-1">👔</span>${item.taskowner}
+                    </span>
                   ` : ''}
-                  <span class="badge ${this.getBadgeClass(item.badgeStyle) || 'Default'} rounded-pill ms-2">
+                  <span class="badge ${this.getBadgeClass(item.badgeStyle) || 'Default'} rounded-pill">
                     ${item.badge || 'Update'}
                   </span>
                   ${this.deletableIndices.includes(index) && !this.readOnly ? html`
@@ -306,8 +403,9 @@ class CommentsElement extends LitElement {
                     </button>
                   ` : ''}
                 </div>
-                <div class="d-flex flex-row align-items-center">
+                <div class="d-flex flex-row align-items-center mt-1">
                   <p class="mb-0 text-muted comment-date">
+                    <span class="me-1">🕒</span>
                     ${new Date(item.timestamp).toLocaleString('en-GB', {
                       weekday: 'short',
                       year: 'numeric',
@@ -327,23 +425,28 @@ class CommentsElement extends LitElement {
             </div>
           `)}
         </div>
-      ` : html``}
+      `}
   
       ${!this.readOnly ? html`
-        <div class="mt-4">
+        <div class="comment-input-wrapper shadow-sm">
+          <label class="form-label fw-bold mb-2">
+            <span class="me-1">✍️</span>Add New Comment
+          </label>
           <textarea
-            class="comment-textarea"
+            class="form-control comment-textarea mb-3"
             .value=${this.newComment}
             @input=${this.handleCommentChange}
             placeholder="Write your comment here..."
+            rows="4"
           ></textarea>
           <button
-            class="btn btn-default d-flex align-items-center"
+            class="btn btn-primary btn-lg d-flex align-items-center shadow-sm"
             type="button"
             @click=${this.addComment}
             ?disabled=${!this.newComment.trim()}
           >
-            ${sendIcon} Add Comment
+            ${sendIcon} 
+            <span class="ms-2">Post Comment to Workflow</span>
           </button>
         </div>
       ` : ''}
