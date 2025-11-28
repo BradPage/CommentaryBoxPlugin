@@ -10,7 +10,7 @@ class CommentsElement extends LitElement {
 
   static getMetaConfig() {
     return {
-      controlName: 'dfs-workflow-comments',
+      controlName: 'dfs-workflow-comments-2',
       fallbackDisableSubmit: false,
       description: 'Notes and comments',
       iconUrl:'https://bradpage.github.io/WebComponents/public/media/icons/icon.svg',
@@ -64,7 +64,7 @@ class CommentsElement extends LitElement {
           isValueField: true,
           properties: {
             comments: {
-              type: 'array', //change to object to deploy, change to array to use in the control
+              type: 'object', //change to object to deploy, change to array to use in the control
               description: 'Array of comments',
               items: {
                 type: 'object',
