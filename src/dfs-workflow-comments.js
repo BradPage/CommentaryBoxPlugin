@@ -57,6 +57,12 @@ class CommentsElement extends LitElement {
           description: 'Enter a number value of how many comments should be shown, older comments are hidden, entering 0 will show all comments, default is 5.',
           defaultValue: 5,
         },
+        newCommentAdded: {
+          title: 'New Comment Added (internal)',
+          type: 'boolean',
+          description: 'Internal flag: true when a new deletable comment exists. Used by rules.',
+          isValueField: true
+        },
         outputobj: {
           title: 'Comments Output',
           type: 'object',
@@ -189,15 +195,18 @@ class CommentsElement extends LitElement {
   updateNewCommentFlag() {
     const hasNew = this.deletableIndices.length > 0;
 
+    // Build the full payload with the property Nintex reads as the "value"
     this.outputobj = {
       comments: this.workingComments,
       mostRecentComment: this.workingComments[this.workingComments.length - 1] || null,
-      newCommentAdded: hasNew   // <-- Nintex rule will check this
+      newCommentAdded: hasNew
     };
 
-    this.dispatchEvent(
-      new CustomEvent("ntx-value-change", { detail: this.outputobj })
-    );
+    // Debug logging
+    console.log('dispatching ntx-value-change', this.outputobj);
+
+    // Dispatch the object — Nintex will read `.newCommentAdded` because it's marked `isValueField`
+    this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: this.outputobj }));
   }
 
   addComment() {
