@@ -56,7 +56,7 @@ class CommentsElement extends LitElement {
       description: 'Notes and comments',
       iconUrl:'https://bradpage.github.io/WebComponents/public/media/icons/icon.svg',
       groupName: 'DFS',
-      version: '2.0',
+      version: '2.1',
       properties: {
         commentsBorder: {
           title: 'Show Border on comments',
@@ -324,11 +324,6 @@ class CommentsElement extends LitElement {
   
     return html`
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-      
-      <!-- Workflow Commentary Box Title -->
-      <div class="mb-3 p-2 rounded" style="background-color: #247b7b;">
-        <h5 class="mb-0 text-white fw-bold">💬 Workflow Commentary Box</h5>
-      </div>
       
       <!-- Show "Show All Comments" button if there are more comments than the limit -->
       ${this.historyLimit > 0 && this.workingComments.length > this.historyLimit ? html`
