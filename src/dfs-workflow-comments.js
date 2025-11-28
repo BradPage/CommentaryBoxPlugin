@@ -15,7 +15,7 @@ class CommentsElement extends LitElement {
       description: 'Notes and comments',
       iconUrl:'https://bradpage.github.io/WebComponents/public/media/icons/icon.svg',
       groupName: 'DFS',
-      version: '1.2',
+      version: '1.3',
       properties: {
         commentsBorder: {
           title: 'Show Border on comments',
@@ -57,11 +57,10 @@ class CommentsElement extends LitElement {
           description: 'Enter a number value of how many comments should be shown, older comments are hidden, entering 0 will show all comments, default is 5.',
           defaultValue: 5,
         },
-        newCommentsCount: {
-          type: 'integer',
-          title: 'New Comments Count',
-          description: 'Number of comments added in current step (use this in submission rules)',
-          isValueField: true,
+        counterFieldId: {
+          type: 'string',
+          title: 'Counter Field ID',
+          description: 'Enter the CSS ID of a hidden number field that will track the count (e.g., "hiddenCounter"). Leave blank if not using submission rules.',
         },
         outputobj: {
           title: 'Comments Output',
@@ -125,7 +124,7 @@ class CommentsElement extends LitElement {
     historyLimit: { type: Number },
     showAll: { type: Boolean },
     outputobj: { type: Object },
-    newCommentsCount: { type: Number },
+    counterFieldId: { type: String },
   };
 
   constructor() {
@@ -144,7 +143,7 @@ class CommentsElement extends LitElement {
     this.deletableIndices = [];
     this.historyLimit = 5;
     this.showAll = false;
-    this.newCommentsCount = 0;
+    this.counterFieldId = '';
   }
 
   toggleShowAll() {
@@ -175,26 +174,25 @@ class CommentsElement extends LitElement {
     }
   }
 
-  // Helper method to dispatch both outputobj and newCommentsCount
-  dispatchOutputs() {
-    const mostRecentComment = this.workingComments[this.workingComments.length - 1] || null;
-    const outputobj = {
-      comments: this.workingComments,
-      mostRecentComment,
-    };
+  // Helper method to update the external counter field
+  updateCounterField() {
+    if (!this.counterFieldId) return;
 
-    // Dispatch outputobj
-    this.dispatchEvent(new CustomEvent('ntx-value-change', { 
-      detail: outputobj,
-      bubbles: true,
-      composed: true 
-    }));
-
-    // Update and dispatch newCommentsCount separately
-    this.newCommentsCount = this.deletableIndices.length;
-    
-    // Force a property update notification
-    this.requestUpdate('newCommentsCount');
+    try {
+      // Try to find the field by CSS ID
+      const counterInput = document.getElementById(this.counterFieldId);
+      
+      if (counterInput) {
+        // Set the value to the count of deletable comments
+        counterInput.value = this.deletableIndices.length;
+        
+        // Trigger change event so Nintex picks it up
+        counterInput.dispatchEvent(new Event('change', { bubbles: true }));
+        counterInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    } catch (error) {
+      console.warn('Could not update counter field:', error);
+    }
   }
 
   addComment() {
@@ -217,8 +215,17 @@ class CommentsElement extends LitElement {
     // Mark the new comment as deletable
     this.deletableIndices = [...this.deletableIndices, this.workingComments.length - 1];
 
-    // Dispatch outputs
-    this.dispatchOutputs();
+    // Dispatch the updated outputobj
+    const mostRecentComment = newEntry;
+    const outputobj = {
+      comments: this.workingComments,
+      mostRecentComment,
+    };
+
+    this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
+
+    // Update the external counter field
+    this.updateCounterField();
 
     // Clear the newComment field
     this.newComment = '';
@@ -233,8 +240,17 @@ class CommentsElement extends LitElement {
       .filter(i => i !== index) // Remove the deleted index
       .map(i => (i > index ? i - 1 : i)); // Shift indices down for remaining comments after the deleted index
   
-    // Dispatch outputs
-    this.dispatchOutputs();
+    // Dispatch the updated outputobj
+    const mostRecentComment = this.workingComments[this.workingComments.length - 1] || null;
+    const outputobj = {
+      comments: this.workingComments,
+      mostRecentComment,
+    };
+  
+    this.dispatchEvent(new CustomEvent('ntx-value-change', { detail: outputobj }));
+
+    // Update the external counter field
+    this.updateCounterField();
   }
   
   handleCommentChange(e) {
